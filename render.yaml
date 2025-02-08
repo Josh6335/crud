@@ -1,4 +1,4 @@
-services: 
+services:
   - name: crud
     type: web
     env: docker
@@ -17,21 +17,25 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        fromDatabase: laravel-db
+        value: dpg-xxxxx.render.com  # Replace with actual Render DB host
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        fromDatabase: laravel-db
+        value: crud_e89m  # Your actual DB name from Render
       - key: DB_USERNAME
-        fromDatabase: laravel-db
+        value: crud_e89m_user  # Your actual DB username from Render
       - key: DB_PASSWORD
-        fromDatabase: laravel-db
+        value: YourDatabasePassword  # Your actual DB password from Render (keep it secret)
 
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan key:generate
+      php artisan cache:clear
+      php artisan config:clear
+
+    startCommand: |
       php artisan migrate --force
-    startCommand: php artisan serve --host=0.0.0.0 --port=10000
+      apache2-foreground  # Starts Apache instead of `php artisan serve`
 
 databases:
   - name: laravel-db

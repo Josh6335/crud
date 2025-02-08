@@ -1,4 +1,4 @@
-# Use official PHP image with Apache
+# Use the official PHP image with Apache
 FROM php:8.2-apache
 
 # Set working directory inside the container
@@ -28,15 +28,21 @@ COPY . /var/www/html
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set correct permissions
+# Set correct permissions for Laravel storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Point Apache to Laravel's public folder
-RUN sed -i -e "s|/var/www/html|/var/www/html/public|g" /etc/apache2/sites-available/000-default.conf
+# Configure Apache to serve Laravel from the public directory
+RUN echo '<VirtualHost *:80>
+    DocumentRoot /var/www/html/public
+    <Directory /var/www/html/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
+# Set the entrypoint command to start Apache
 CMD ["apache2-foreground"]
